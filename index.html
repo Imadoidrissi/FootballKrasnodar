@@ -1,21 +1,60 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>⚽ Football Game Signup</title>
+  <meta charset="UTF-8">
+  <title>⚽ Local Football Game Signup</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: Arial; padding: 20px; background: #f4f4f4; }
-    .card { background: white; padding: 20px; border-radius: 10px; max-width: 500px; margin: auto; }
-    input, button { padding: 10px; margin: 5px 0; width: 95%; }
-    ul { list-style: none; padding: 0; }
-    li { background: #eee; margin: 5px 0; padding: 8px; border-radius: 5px; }
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(to right, #74ebd5, #acb6e5);
+      margin: 0; padding: 0;
+      display: flex; justify-content: center; align-items: center; min-height: 100vh;
+    }
+    .card {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      max-width: 500px;
+      width: 90%;
+      text-align: center;
+    }
+    h2 { color: #333; }
+    p { color: #555; }
+    input, button {
+      padding: 12px;
+      margin: 10px 0;
+      width: 90%;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+    button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover { background: #45a049; }
+    ul { list-style: none; padding: 0; max-height: 200px; overflow-y: auto; }
+    li {
+      background: #eee;
+      margin: 5px 0;
+      padding: 8px;
+      border-radius: 5px;
+    }
+    .date { font-weight: bold; margin-bottom: 15px; }
   </style>
 </head>
 <body>
   <div class="card">
     <h2>⚽ Local Football Game</h2>
+    <p class="date" id="matchDate"></p>
     <p><b>Duration:</b> 1h 30m<br>
-    <b>Rotation:</b> 14 min play / 7 min rest<br>
-    <b>Max Players:</b> 15</p>
+       <b>Rotation:</b> 14 min play / 7 min rest<br>
+       <b>Max Players:</b> 15</p>
 
     <h3>Register</h3>
     <input id="name" placeholder="Your name" />
@@ -30,36 +69,54 @@
     // 👇 Replace this with your Google Apps Script Web App URL
     const API_URL = "https://script.google.com/macros/s/AKfycbwd08PsnmlL_TJPGzMuYFXX6Ioujr8nq7Lp5s4DeTubrjn8IexRlXMDeTgJeXjc8ggfxw/exec";
 
+    // Set the match date
+    const matchDate = new Date("2025-09-20T17:00:00"); // Change to your match date/time
+    document.getElementById("matchDate").innerText = "Match Date: " + matchDate.toLocaleString();
+
     async function loadPlayers() {
       try {
         const res = await fetch(API_URL);
         const data = await res.json();
-        let players = data.slice(1); // skip headers
+        let players = data.slice(1); // skip header row
         document.getElementById("count").innerText = players.length + "/15 players";
-        let list = document.getElementById("players");
+        const list = document.getElementById("players");
         list.innerHTML = "";
         players.forEach(row => {
-          let li = document.createElement("li");
+          const li = document.createElement("li");
           li.innerText = row[0];
           list.appendChild(li);
         });
       } catch (err) {
+        console.error(err);
         document.getElementById("count").innerText = "Error loading players";
       }
     }
 
     async function register() {
-      let name = document.getElementById("name").value;
-      if (!name) return alert("Enter your name!");
-      const res = await fetch(API_URL, {
-        method: "POST",
-        body: new URLSearchParams({name})
-      });
-      const text = await res.text();
-      alert(text);
-      loadPlayers();
+      const name = document.getElementById("name").value.trim();
+      if (!name) return alert("Please enter your name!");
+
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          body: new URLSearchParams({ name })
+        });
+        const text = await res.text();
+
+        if (text.startsWith("Success")) {
+          alert("✅ " + name + " registered successfully!");
+          document.getElementById("name").value = ""; // clear input
+        } else {
+          alert("⚠️ " + text);
+        }
+        loadPlayers();
+      } catch (err) {
+        console.error(err);
+        alert("Error connecting to server");
+      }
     }
 
+    // Load players when page opens
     loadPlayers();
   </script>
 </body>
