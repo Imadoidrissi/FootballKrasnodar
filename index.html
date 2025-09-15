@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>⚽ Football Game Signup</title>
+  <style>
+    body { font-family: Arial; padding: 20px; background: #f4f4f4; }
+    .card { background: white; padding: 20px; border-radius: 10px; max-width: 500px; margin: auto; }
+    input, button { padding: 10px; margin: 5px 0; width: 95%; }
+    ul { list-style: none; padding: 0; }
+    li { background: #eee; margin: 5px 0; padding: 8px; border-radius: 5px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>⚽ Local Football Game</h2>
+    <p><b>Duration:</b> 1h 30m<br>
+    <b>Rotation:</b> 14 min play / 7 min rest<br>
+    <b>Max Players:</b> 15</p>
+
+    <h3>Register</h3>
+    <input id="name" placeholder="Your name" />
+    <button onclick="register()">Join Game</button>
+
+    <h3>Players Registered</h3>
+    <p id="count">Loading...</p>
+    <ul id="players"></ul>
+  </div>
+
+  <script>
+    // 👇 Replace this with your Google Apps Script Web App URL
+    const API_URL = "YOUR_GOOGLE_SCRIPT_URL_HERE";
+
+    async function loadPlayers() {
+      try {
+        const res = await fetch(API_URL);
+        const data = await res.json();
+        let players = data.slice(1); // skip headers
+        document.getElementById("count").innerText = players.length + "/15 players";
+        let list = document.getElementById("players");
+        list.innerHTML = "";
+        players.forEach(row => {
+          let li = document.createElement("li");
+          li.innerText = row[0];
+          list.appendChild(li);
+        });
+      } catch (err) {
+        document.getElementById("count").innerText = "Error loading players";
+      }
+    }
+
+    async function register() {
+      let name = document.getElementById("name").value;
+      if (!name) return alert("Enter your name!");
+      const res = await fetch(API_URL, {
+        method: "POST",
+        body: new URLSearchParams({name})
+      });
+      const text = await res.text();
+      alert(text);
+      loadPlayers();
+    }
+
+    loadPlayers();
+  </script>
+</body>
+</html>
